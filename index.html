@@ -183,7 +183,8 @@ input[type=text]:focus{outline:none;border-color:var(--rose)}
       <div class="paper"><img id="stripImg" alt="Your photo strip"></div>
     </div>
     <div class="actions" id="printActions" hidden>
-      <button class="btn" id="saveBtn" type="button">Save to Photos</button>
+      <button class="btn" id="saveBtn" type="button">Save strip</button>
+      <button class="ghost" id="storyBtn" type="button">Save for IG Story (9:16)</button>
       <button class="ghost" id="toFridge" type="button">See it on the fridge</button>
       <button class="ghost" id="again" type="button">Take another</button>
     </div>
@@ -204,6 +205,7 @@ input[type=text]:focus{outline:none;border-color:var(--rose)}
     <button class="btn" id="modalSave" type="button">Save</button>
     <button class="ghost" id="modalRemove" type="button">Take down</button>
   </div>
+  <div class="row"><button class="ghost" id="modalStory" type="button">Save for IG Story</button></div>
   <div class="row"><button class="ghost" id="modalClose" type="button">Close</button></div>
 </div>
 
@@ -380,10 +382,19 @@ async function printStrip(){show('print');$('printActions').hidden=true;$('statu
   const img=$('stripImg');img.className='';img.src=URL.createObjectURL(state.blob);await img.decode().catch(()=>{});
   await wait(600);$('status').textContent='Printing…';void img.offsetWidth;img.classList.add('printing');
   img.addEventListener('animationend',()=>{img.classList.replace('printing','done');$('status').textContent='Ready! It’s on the fridge too.';$('printActions').hidden=false;},{once:true});}
-async function shareBlob(blob){const file=new File([blob],`photobooth-${Date.now()}.png`,{type:'image/png'});
+async function shareBlob(blob,kind='strip'){const file=new File([blob],`photobooth-${kind}-${Date.now()}.png`,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=file.name;a.click();}
 $('saveBtn').onclick=()=>shareBlob(state.blob);
+/* 9:16 story: the strip centred on candy stripes, kept clear of Instagram's top and bottom bars */
+async function storyBlob(blob){const img=new Image();img.src=URL.createObjectURL(blob);await img.decode();
+  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d');
+  for(let i=0;i<1080;i+=60){x.fillStyle=(i/60)%2?'#D8A4AF':'#F7DDD5';x.fillRect(i,0,60,1920);}
+  const h=1400,w=h*img.naturalWidth/img.naturalHeight;
+  x.save();x.translate(540,960);x.rotate(-.025);x.shadowColor='rgba(107,64,59,.35)';x.shadowBlur=40;x.shadowOffsetY=18;
+  x.drawImage(img,-w/2,-h/2,w,h);x.restore();URL.revokeObjectURL(img.src);
+  return new Promise(r=>c.toBlob(r,'image/png'));}
+$('storyBtn').onclick=async()=>shareBlob(await storyBlob(state.blob),'story');
 $('again').onclick=()=>{state.photos=[];show('setup');};
 $('toFridge').onclick=()=>{show('fridge');renderFridge(state.lastId);};
 
@@ -444,6 +455,7 @@ function openModal(rec){state.open=rec;const u=URL.createObjectURL(rec.blob);fri
   $('modalRemove').textContent='Take down';$('modalRemove').dataset.armed='';$('modal').hidden=false;}
 $('modalClose').onclick=()=>{$('modal').hidden=true;};
 $('modalSave').onclick=()=>state.open&&shareBlob(state.open.blob);
+$('modalStory').onclick=async()=>state.open&&shareBlob(await storyBlob(state.open.blob),'story');
 $('modalRemove').onclick=async()=>{const b=$('modalRemove');if(!b.dataset.armed){b.dataset.armed='1';b.textContent='Tap again to remove';return;}
   await Fridge.remove(state.open.id);$('modal').hidden=true;renderFridge();};
 </script>

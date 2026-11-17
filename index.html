@@ -312,9 +312,9 @@ function frameLayout(key,name,wins,bg){const img=new Image();img.src=`templates/
       wins.forEach(([x0,y0,x1,y1],i)=>cover(ctx,p[i],x0-2,y0-2,x1-x0+5,y1-y0+5));
       if(img.complete&&img.naturalWidth)ctx.drawImage(img,0,0,W,H);}};}
 frameLayout('voltes','Voltes V',[[39,255,549,538],[39,574,549,859],[39,897,549,1158],[39,1193,549,1466]],'#1b2650');
-frameLayout('film','Birthday Film',[[124,152,473,502],[125,534,474,885],[125,913,474,1265],[125,1292,474,1644]],'#5a3a26');
-frameLayout('alex1','Alex Day',[[71,183,520,611],[71,808,520,1236]],'#efe6d6');
-frameLayout('alex2','Alex Day II',[[71,183,520,611],[71,808,520,1236]],'#efe6d6');
+frameLayout('film','Birthday Film',[[123,152,476,506],[123,533,476,887],[123,912,476,1267],[123,1292,476,1647]],'#5a3a26');
+frameLayout('alex1','Alex Day',[[71,150,520,581],[71,774,520,1206]],'#efe6d6');
+frameLayout('alex2','Alex Day II',[[71,150,520,581],[71,774,520,1206]],'#efe6d6');
 
 function textFor(key){const o={};L[key].fields.forEach(([k,,def])=>{const v=state.text[key+'.'+k];o[k]=(v==null?def:v);});return o;}
 async function loadFonts(t){await Promise.all(Object.values(OVER).map(i=>i.decode().catch(()=>{})));const sample=Object.values(t||{}).join('')+'Aa안녕하세요!';
